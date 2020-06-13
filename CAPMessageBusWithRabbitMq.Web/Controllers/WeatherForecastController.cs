@@ -6,6 +6,7 @@ using DotNetCore.CAP;
 using Microsoft.AspNetCore.Mvc;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
 using Newtonsoft.Json;
 
 namespace CAPMessageBusWithRabbitMq.Web.Controllers
@@ -41,6 +42,8 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                 await _context.Trips.AddAsync(trip);
 
 
+                await _context.SaveChangesAsync();
+
                 //publish trip request message for anyone interested
                 var tripStatusMessage = new TripStatusMessage
                 {
@@ -49,9 +52,9 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                     TripId = trip.Id,
                     TripStatus = TripStatus.Requested
                 };
-                await _context.SaveChangesAsync();
+                var stringMessage = SerialiseGeoData(geometryFactory, tripStatusMessage);
 
-                await _publisher.PublishAsync(nameof(TripStatusMessage),tripStatusMessage);
+                await _publisher.PublishAsync(nameof(TripStatusMessage), stringMessage);
                 await transaction.CommitAsync();
             }
             catch (Exception e)
@@ -61,5 +64,14 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
 
             return Ok();
         }
+
+       private static string SerialiseGeoData(GeometryFactory geometryFactory, TripStatusMessage tripStatusMessage)
+       {
+           var stringBuilder = new StringBuilder();
+           var serializer = GeoJsonSerializer.Create(geometryFactory);
+           serializer.Serialize(new JsonTextWriter(new StringWriter(stringBuilder)), tripStatusMessage,
+               typeof(TripStatusMessage));
+           return stringBuilder.ToString();
+       }
     }
 }
