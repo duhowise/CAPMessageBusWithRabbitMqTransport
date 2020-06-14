@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using CAPMessageBusWithRabbitMq.Web.Services;
 using DotNetCore.CAP;
 using Microsoft.AspNetCore.Mvc;
 using NetTopologySuite;
@@ -17,11 +18,13 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
     {
         private readonly ICapPublisher _publisher;
         private readonly AppDbContext _context;
+        private readonly GeoDataSerialisationService _serialisationService;
 
-        public WeatherForecastController(ICapPublisher publisher,AppDbContext context)
+        public WeatherForecastController(ICapPublisher publisher,AppDbContext context,GeoDataSerialisationService serialisationService)
         {
             _publisher = publisher;
             _context = context;
+            _serialisationService = serialisationService;
         }
 
        [HttpGet("RequestTrip")] public async Task<IActionResult> RequestTrip()
@@ -52,8 +55,7 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                     TripId = trip.Id,
                     TripStatus = TripStatus.Requested
                 };
-                var stringMessage = SerialiseGeoData(geometryFactory, tripStatusMessage);
-
+                var stringMessage = _serialisationService.Serialise(geometryFactory, tripStatusMessage);
                 await _publisher.PublishAsync(nameof(TripStatusMessage), stringMessage);
                 await transaction.CommitAsync();
             }
@@ -65,13 +67,6 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
             return Ok();
         }
 
-       private static string SerialiseGeoData(GeometryFactory geometryFactory, TripStatusMessage tripStatusMessage)
-       {
-           var stringBuilder = new StringBuilder();
-           var serializer = GeoJsonSerializer.Create(geometryFactory);
-           serializer.Serialize(new JsonTextWriter(new StringWriter(stringBuilder)), tripStatusMessage,
-               typeof(TripStatusMessage));
-           return stringBuilder.ToString();
-       }
+       
     }
 }

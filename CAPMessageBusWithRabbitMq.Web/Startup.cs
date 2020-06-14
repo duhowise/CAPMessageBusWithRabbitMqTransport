@@ -1,4 +1,5 @@
 using System.Text.Json;
+using CAPMessageBusWithRabbitMq.Web.Services;
 using DotNetCore.CAP;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -31,6 +32,7 @@ namespace CAPMessageBusWithRabbitMq.Web
             {
                 optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),topology=> topology.UseNetTopologySuite());
             });
+            services.AddSingleton<GeoDataSerialisationService>();
             services.AddCap(capOptions =>
             {
                 capOptions.UseRabbitMQ("localhost");
