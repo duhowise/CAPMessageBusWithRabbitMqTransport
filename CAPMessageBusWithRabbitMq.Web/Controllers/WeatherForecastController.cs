@@ -16,6 +16,7 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
+        int count = 0;
         private readonly ICapPublisher _publisher;
         private readonly AppDbContext _context;
         private readonly GeoDataSerialisationService _serialisationService;
@@ -28,7 +29,9 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
         }
 
        [HttpGet("RequestTrip")] public async Task<IActionResult> RequestTrip()
-        {
+       {
+           count++;
+           var tripStatusFromCount =count % 2;
             try
             {
                 var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
@@ -42,8 +45,8 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                     Status = TripStatus.Requested
                 };
                 //save the trip
-                await _context.Trips.AddAsync(trip);
-
+              var entityEntry=  await _context.Trips.AddAsync(trip);
+              trip = entityEntry.Entity;
 
                 await _context.SaveChangesAsync();
 
@@ -53,7 +56,7 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                     CurrentLocation = geometryFactory.CreatePoint(new Coordinate(5.6353201, -0.0653353)),
                     Time = DateTime.UtcNow,
                     TripId = trip.Id,
-                    TripStatus = TripStatus.Requested
+                    TripStatus =(TripStatus)tripStatusFromCount
                 };
                 var stringMessage = _serialisationService.Serialise(geometryFactory, tripStatusMessage);
                 await _publisher.PublishAsync(nameof(TripStatusMessage), stringMessage);

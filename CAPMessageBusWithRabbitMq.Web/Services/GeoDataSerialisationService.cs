@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Text;
+using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
@@ -17,8 +18,9 @@ namespace CAPMessageBusWithRabbitMq.Web.Services
             return stringBuilder.ToString();
         }
         
-        public T DeSerialise<T>(GeometryFactory geometryFactory, string payload)
+        public T DeSerialise<T>(string payload)
         {
+            var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
             var serializer = GeoJsonSerializer.Create(geometryFactory);
          var data=   serializer.Deserialize<T>(new JsonTextReader(new StringReader(payload)));
             return data;

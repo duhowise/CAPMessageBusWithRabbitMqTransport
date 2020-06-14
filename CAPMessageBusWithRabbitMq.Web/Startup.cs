@@ -33,6 +33,7 @@ namespace CAPMessageBusWithRabbitMq.Web
                 optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),topology=> topology.UseNetTopologySuite());
             });
             services.AddSingleton<GeoDataSerialisationService>();
+            services.AddScoped<MessageHandlers>();
             services.AddCap(capOptions =>
             {
                 capOptions.UseRabbitMQ("localhost");
