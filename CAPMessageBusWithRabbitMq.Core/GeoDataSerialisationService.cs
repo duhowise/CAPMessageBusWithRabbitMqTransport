@@ -5,7 +5,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
 
-namespace CAPMessageBusWithRabbitMq.Web.Services
+namespace CAPMessageBusWithRabbitMq.Core
 {
     public class GeoDataSerialisationService
     {

@@ -1,14 +1,10 @@
 ﻿using System;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using CAPMessageBusWithRabbitMq.Web.Services;
+using CAPMessageBusWithRabbitMq.Core;
 using DotNetCore.CAP;
 using Microsoft.AspNetCore.Mvc;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO;
-using Newtonsoft.Json;
 
 namespace CAPMessageBusWithRabbitMq.Web.Controllers
 {
@@ -16,7 +12,6 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        int count = 0;
         private readonly ICapPublisher _publisher;
         private readonly AppDbContext _context;
         private readonly GeoDataSerialisationService _serialisationService;
@@ -30,8 +25,7 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
 
        [HttpGet("RequestTrip")] public async Task<IActionResult> RequestTrip()
        {
-           count++;
-           var tripStatusFromCount =count % 3;
+          
             try
             {
                 var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
@@ -41,12 +35,13 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                 {
                     StartingPoint = geometryFactory.CreatePoint(new Coordinate(5.6353201, -0.0653353)),
                     Destination = geometryFactory.CreatePoint(new Coordinate(5.6424616, -0.0590958)),
+                    DriverId = $"{120}",
                     StartTime = DateTime.UtcNow,
                     Status = TripStatus.Requested
                 };
                 //save the trip
-              var entityEntry=  await _context.Trips.AddAsync(trip);
-              trip = entityEntry.Entity;
+              var entityEntry = await _context.Trips.AddAsync(trip);
+                trip = entityEntry.Entity;
 
                 await _context.SaveChangesAsync();
 
@@ -55,11 +50,11 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                 {
                     CurrentLocation = geometryFactory.CreatePoint(new Coordinate(5.6353201, -0.0653353)),
                     Time = DateTime.UtcNow,
-                    TripId = trip.Id,
-                    TripStatus =(TripStatus)tripStatusFromCount
+                    TripId =trip.Id,
+                    TripStatus =TripStatus.Completed
                 };
                 var stringMessage = _serialisationService.Serialise(geometryFactory, tripStatusMessage);
-                await _publisher.PublishAsync(nameof(TripStatusMessage),tripStatusMessage);
+                await _publisher.PublishAsync(nameof(TripStatusMessage),stringMessage);
                 await transaction.CommitAsync();
             }
             catch (Exception e)

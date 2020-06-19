@@ -1,5 +1,5 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using CAPMessageBusWithRabbitMq.Core;
 using CAPMessageBusWithRabbitMq.Web.Services;
 using DotNetCore.CAP;
 using Microsoft.AspNetCore.Builder;
@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using NetTopologySuite.IO.Converters;
 
 namespace CAPMessageBusWithRabbitMq.Web
 {

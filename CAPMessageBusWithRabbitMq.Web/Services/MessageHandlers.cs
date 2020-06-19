@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CAPMessageBusWithRabbitMq.Core;
 using DotNetCore.CAP;
 
 namespace CAPMessageBusWithRabbitMq.Web.Services

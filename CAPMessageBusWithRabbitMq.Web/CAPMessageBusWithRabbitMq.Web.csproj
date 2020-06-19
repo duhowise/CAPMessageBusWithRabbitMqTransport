@@ -30,5 +30,9 @@
     <PackageReference Include="System.Text.Json" Version="5.0.0-preview.5.20278.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CAPMessageBusWithRabbitMq.Core\CAPMessageBusWithRabbitMq.Core.csproj" />
+  </ItemGroup>
+
 
 </Project>
