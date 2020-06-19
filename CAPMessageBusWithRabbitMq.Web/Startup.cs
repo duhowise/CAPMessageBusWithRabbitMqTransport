@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using CAPMessageBusWithRabbitMq.Web.Services;
 using DotNetCore.CAP;
 using Microsoft.AspNetCore.Builder;
@@ -27,10 +28,11 @@ namespace CAPMessageBusWithRabbitMq.Web
             services.AddControllers().AddJsonOptions(x =>
             {
                 x.JsonSerializerOptions.PropertyNameCaseInsensitive=true;
+                x.JsonSerializerOptions.ReferenceHandling=ReferenceHandling.Preserve;
             });
             services.AddDbContext<AppDbContext>(optionsBuilder =>
             {
-                optionsBuilder.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),topology=> topology.UseNetTopologySuite());
+                optionsBuilder.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"),topology=> topology.UseNetTopologySuite());
             });
             services.AddSingleton<GeoDataSerialisationService>();
             services.AddScoped<MessageHandlers>();

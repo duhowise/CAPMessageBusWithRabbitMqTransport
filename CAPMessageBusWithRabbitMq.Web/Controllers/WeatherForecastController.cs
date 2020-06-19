@@ -31,7 +31,7 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
        [HttpGet("RequestTrip")] public async Task<IActionResult> RequestTrip()
        {
            count++;
-           var tripStatusFromCount =count % 2;
+           var tripStatusFromCount =count % 3;
             try
             {
                 var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
@@ -59,7 +59,7 @@ namespace CAPMessageBusWithRabbitMq.Web.Controllers
                     TripStatus =(TripStatus)tripStatusFromCount
                 };
                 var stringMessage = _serialisationService.Serialise(geometryFactory, tripStatusMessage);
-                await _publisher.PublishAsync(nameof(TripStatusMessage), stringMessage);
+                await _publisher.PublishAsync(nameof(TripStatusMessage),tripStatusMessage);
                 await transaction.CommitAsync();
             }
             catch (Exception e)

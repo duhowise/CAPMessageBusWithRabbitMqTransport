@@ -16,6 +16,7 @@ namespace CAPMessageBusWithRabbitMq.Web
         public DbSet<Trip> Trips { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.HasPostgresExtension("postgis");
             modelBuilder.Entity<Trip>().Property(x=>x.Status).HasConversion(new EnumToStringConverter<TripStatus>());
             base.OnModelCreating(modelBuilder);
         }
